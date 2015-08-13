@@ -1,0 +1,110 @@
+<project name="testng-xslt" basedir=".">
+     <property environment="env"/>
+	
+	
+	<property name="ws.home" value="C:\Users\teamcity\workspace\demo"/>
+	<property name="ws.jars" value="C:\Selenium\jars"/>
+	<property name="test.dest" value="${ws.home}/build"/>
+	<property name="test.src" value="${ws.home}/src"/>
+	<property name="ng.result" value="test-output"/>
+
+	<!--setClassPath-->
+	<target name="setClassPath" unless="test.Classpath">
+		<path id= "classpath_jars">
+			<fileset dir="${ws.jars}" includes="*.jar"/>
+		</path>
+		
+		<pathconvert pathsep=":" property="test.classpath" refid="classpath_jars"/>
+	</target>
+	
+	<!--init-->
+	<target name="init" depends="setClassPath">
+		<tstamp>
+			<format property="start.time" pattern="MM/dd/yyyy hh:mm aa"/>
+		</tstamp>
+	<condition property="ANT"
+		value="${env.ANT_HOME}/bin/ant.bat"
+		else="${env.ANT_HOME}/bin/ant">
+		<os family="windows"/>
+	
+	</condition>
+	
+	
+	<taskdef name="testng" classpath="${test.classpath}"
+		classname="org.testng.TestNGAntTask"/>
+	</target>
+	
+	<!--all-->
+	<target name="all">
+	</target>
+	
+	<!--clean-->
+	<target name="clean">
+		<delete dir="${test.dest}"/> 
+		
+	</target>
+	
+	
+	<!--compile-->
+	<target name="compile" depends="init, clean" >
+		<delete includeemptydirs="true" quiet="true">
+			<fileset dir="${test.dest}" includes="**/**" />
+		</delete>
+		<echo message="Making Directory......"/>
+		<mkdir dir="${test.dest}" />	
+		<echo message="Classpath-------:  ${test.classpath}"/>	
+		<echo message="Compiling......"/>
+		<javac
+			debug="true"
+			destdir="${test.dest}"
+			srcdir="${test.src}"
+			target="1.7"
+			classpath="${test.classpath}"
+	    >
+		</javac>
+	</target>	
+		
+	
+		
+	<!--build-->
+	
+	<target name="build" depends="init">
+	</target>
+	
+	<!--run-->
+	<target name="run" depends="compile">
+		<testng classpath="${test.classpath}:${test.dest}" suitename="Ankur">
+			<xmlfileset dir="${ws.home}" includes="testng.xml"/>
+			
+		</testng>
+		
+	</target>
+	
+	
+	
+	<target name="usage">
+		<echo>
+			ant run will execute the test
+	    </echo>
+	</target>
+	
+	<path id="test.c">
+		<fileset dir="${ws.jars}" includes="*.jar"/>
+	</path>
+	
+	<!--reports-->
+<target name="makexsltreports">
+	<mkdir dir="${ws.home}/XSLT_Reports/output"/>
+	<echo message="Creating Reports......"/>
+	<xslt in="${ng.result}/testng-results.xml" style="src/xslt/testng-results.xsl"
+	      out="${ws.home}/XSLT_Reports/output/index.html" classpathref="test.c" processor="SaxonLiaison">
+	            <param name="testNgXslt.outputDir" expression="${ws.home}/XSLT_Reports/output/"/>
+	            <param name="testNgXslt.showRuntimeTotals" expression="true"/>
+		
+	        </xslt>
+	<echo message="Reports Created Successfully......"/>  
+	
+</target >
+	<!--After this dont we cannot use targets-->
+
+</project>
